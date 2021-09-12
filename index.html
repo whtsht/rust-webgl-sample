@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>WebGL & Rust</title>
-    </head>
-    <body>
-        <canvas id="canvas"></canvas>
-    </body>
+
+<head>
+    <title>WebGL & Rust</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <script type="module">
+        import init from './pkg/webgl.js';
+        async function start() {
+            await init();
+        };
+        start();
+    </script>
+</body>
+
 </html>

@@ -1,5 +1,34 @@
+use wasm_bindgen::JsCast;
 use web_sys::WebGlRenderingContext as GL;
-use web_sys::{WebGlBuffer, WebGlProgram, WebGlRenderingContext, WebGlShader};
+use web_sys::*;
+
+pub fn get_webgl_context(height: u32, width: u32) -> Result<WebGlRenderingContext, String> {
+    //Get WebGLContext
+    let document = window().unwrap().document().unwrap();
+    let canvas = document
+        .get_element_by_id("canvas")
+        .ok_or_else(|| String::from("canvas doesn't exist :("))?;
+    let canvas: web_sys::HtmlCanvasElement =
+        canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+    canvas.set_height(height);
+    canvas.set_width(width);
+
+    let gl: WebGlRenderingContext = canvas
+        .get_context("webgl")
+        .unwrap()
+        .ok_or_else(|| String::from("webgl is not supported in this browser :("))?
+        .dyn_into()
+        .unwrap();
+
+    //Initialize WebGLContext
+    gl.enable(GL::BLEND);
+    gl.blend_func(GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA);
+    gl.clear_color(0.0, 0.0, 0.0, 1.0); //RGBA
+    gl.clear_depth(1.);
+
+    Ok(gl)
+}
 
 pub fn link_program(
     gl: &WebGlRenderingContext,
@@ -57,59 +86,70 @@ fn compile_shader(
 }
 
 #[allow(dead_code)]
-pub struct BufferObject {
+pub fn create_vbo_array(gl: &GL, data: &[f32]) -> Result<WebGlBuffer, String> {
+    let vbo = gl.create_buffer().ok_or("Failed to create buffer :(")?;
+    gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vbo));
+    unsafe {
+        let f32_array = js_sys::Float32Array::view(data);
+        gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &f32_array, GL::STATIC_DRAW)
+    }
+    gl.bind_buffer(GL::ARRAY_BUFFER, None);
+
+    Ok(vbo)
+}
+
+pub fn create_vbo_vector(gl: &GL, data: &Vec<f32>) -> Result<WebGlBuffer, String> {
+    let vbo = gl.create_buffer().ok_or("Failed to create buffer :(")?;
+    gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vbo));
+    unsafe {
+        let f32_array = js_sys::Float32Array::view(&(*data));
+        gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &f32_array, GL::STATIC_DRAW)
+    }
+    gl.bind_buffer(GL::ARRAY_BUFFER, None);
+
+    Ok(vbo)
 }
 
 #[allow(dead_code)]
-impl BufferObject {
-    pub fn new() -> Self {
-        Self {
-        }
+pub fn create_ibo_array(gl: &GL, data: &[u16]) -> Result<WebGlBuffer, String> {
+    let ibo = gl.create_buffer().ok_or("Failed to create buffer :(")?;
+
+    gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, Some(&ibo));
+    unsafe {
+        let ui16_array = js_sys::Uint16Array::view(data);
+        gl.buffer_data_with_array_buffer_view(
+            GL::ELEMENT_ARRAY_BUFFER,
+            &ui16_array,
+            GL::STATIC_DRAW,
+        );
     }
+    gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, None);
 
-    pub fn create_vbo(&self, gl: &GL, data: &[f32]) -> WebGlBuffer {
-        let vbo = gl.create_buffer().ok_or("Failed to create buffer").unwrap();
-        gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vbo));
-        unsafe {
-            let f32_array = js_sys::Float32Array::view(data);
-            gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &f32_array, GL::STATIC_DRAW)
-        }
-        gl.bind_buffer(GL::ARRAY_BUFFER, None);
+    Ok(ibo)
+}
 
-        vbo
+pub fn create_ibo_vector(gl: &GL, data: &Vec<u16>) -> Result<WebGlBuffer, String> {
+    let ibo = gl.create_buffer().ok_or("Failed to create buffer")?;
+
+    gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, Some(&ibo));
+    unsafe {
+        let ui16_array = js_sys::Uint16Array::view(&(*data));
+        gl.buffer_data_with_array_buffer_view(
+            GL::ELEMENT_ARRAY_BUFFER,
+            &ui16_array,
+            GL::STATIC_DRAW,
+        );
     }
+    gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, None);
 
-    pub fn create_ibo(&self, gl: &GL, data: &[u16]) -> WebGlBuffer {
-        let ibo = gl.create_buffer().ok_or("Failed to create buffer").unwrap();
+    Ok(ibo)
+}
 
-        gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, Some(&ibo));
-        unsafe {
-            let ui16_array = js_sys::Uint16Array::view(data);
-            gl.buffer_data_with_array_buffer_view(GL::ELEMENT_ARRAY_BUFFER, &ui16_array, GL::STATIC_DRAW);
-        }
-        gl.bind_buffer(GL::ELEMENT_ARRAY_BUFFER, None);
-
-        ibo
-    }
-
-    pub fn set_attribute(
-        &self,
-        gl: &GL,
-        vbo: &[WebGlBuffer],
-        att_location: &[u32],
-        att_stride: &[i32],
-    ) {
-        for i in 0..vbo.len() {
-            gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vbo[i]));
-            gl.enable_vertex_attrib_array(att_location[i]);
-            gl.vertex_attrib_pointer_with_i32(
-                att_location[i],
-                att_stride[i],
-                GL::FLOAT,
-                false,
-                0,
-                0,
-            );
-        }
+pub fn set_attribute(gl: &GL, vbo: &[WebGlBuffer], att_location: &[u32], att_stride: &[i32]) {
+    for i in 0..vbo.len() {
+        gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vbo[i]));
+        gl.enable_vertex_attrib_array(att_location[i]);
+        gl.vertex_attrib_pointer_with_i32(att_location[i], att_stride[i], GL::FLOAT, false, 0, 0);
     }
 }
+
