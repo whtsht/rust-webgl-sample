@@ -1,0 +1,15 @@
+{
+  "name": "webgl",
+  "collaborators": [
+    "The wasm-bindgen Developers"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "webgl_bg.wasm",
+    "webgl.js",
+    "webgl.d.ts"
+  ],
+  "module": "webgl.js",
+  "types": "webgl.d.ts",
+  "sideEffects": false
+}
