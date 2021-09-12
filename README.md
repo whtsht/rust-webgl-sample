@@ -1,4 +1,22 @@
-# rust_webgl_9
-反射光によるライティング
-https://wgld.org/d/webgl/w021.html
-https://wgld.org/d/webgl/w022.html
+# Rust + WebGL Demo
+
+This sample draws torus.  You can see it from [here](https://whiteshirt-alpha.github.io/rust_webgl_10/).
+
+## Dependencies
+
+[wasm-pack](https://rustwasm.github.io/wasm-pack/)
+
+Make sure it is up to date
+```
+rustup update
+```
+
+And, install the required target
+```
+rustup target add wasm32-unknown-unknown
+```
+
+## Acknowledgments
+
+[dmilford/rust-3d-demo](https://github.com/dmilford/rust-3d-demo)  
+https://wgld.org/
