@@ -1,6 +1,6 @@
 # Rust + WebGL Demo
 
-This sample draws torus.  You can see it from [here](https://whiteshirt-alpha.github.io/rust_webgl_10/).
+This sample draws torus.  You can see it from [here](https://whiteshirt-alpha.github.io/rust-webgl-sample/).
 
 ## Dependencies
 
