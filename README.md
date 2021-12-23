@@ -1,6 +1,6 @@
 # Rust + WebGL Demo
 
-This sample draws torus.  You can see it from [here](https://qaws425.github.io/rust-webgl-sample/).
+This sample draws torus.  You can see it from [here](https://dfjk0.github.io/rust-webgl-sample/).
 
 ## Dependencies
 
